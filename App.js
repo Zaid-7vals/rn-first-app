@@ -1,29 +1,49 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Button,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
-  const [goal, setGoal] = useState("");
   const [goalsList, setGoalsList] = useState([]);
-  
-  const goalInputHandler = (enteredText) => {
-    setGoal(enteredText);
+  const [isAddMode, setIsAddMode] = useState(false);
+
+  const goalOutputHandler = (goal) => {
+    setGoalsList((currentGoals) => [
+      ...goalsList,
+      { id: Math.random().toString(), text: goal },
+    ]);
+    setIsAddMode(false);
+  };
+
+  const removeGoalHandler = (goalId) => {
+    setGoalsList(currentGoals => {
+        return currentGoals.filter((goal) => goalId !== goal.id)
+    })
   }
 
-  const goalOutputHandler = () => {
-    setGoalsList(currentGoals => [...goalsList, goal]);
-    console.log(goalsList);
+  const cancelGoalAdditionHandler = () => {
+    setIsAddMode('false');
   }
-  
+
   return (
     <View style={styles.screen}>
-      <View style={styles.inputContainer}>
-        <TextInput placeholder="Type your Goal" onChangeText={goalInputHandler} style={styles.input} />
-        <Button title="Press Me" onPress={goalOutputHandler} style={styles.button} />
-      </View>
-      <View>
-        <Text>{}</Text>
-      </View>
+      <Button title="Add Goal" onPress={() => setIsAddMode(true)}/>
+      <GoalInput visible={isAddMode} onCancel={cancelGoalAdditionHandler} onAddGoal={goalOutputHandler} />
+      <FlatList
+        data={goalsList}
+        keyExtractor={(item, index) => item.id}
+        renderItem={(itemData) => <GoalItem id={itemData.item.id} onDelete={removeGoalHandler} text={itemData.item.text} />}
+      ></FlatList>
     </View>
   );
 }
@@ -32,19 +52,4 @@ const styles = StyleSheet.create({
   screen: {
     padding: 50,
   },
-
-  inputContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 15,
-  },
-  input: {
-    width: 220,
-    borderBottomColor: "black",
-    borderBottomWidth: 3,
-    padding: 3,
-  },
-  button: {
-    padding: 5
-  }
 });
